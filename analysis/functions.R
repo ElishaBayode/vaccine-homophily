@@ -21,26 +21,31 @@ sir_homophily <- function(time, state, parameters) {
     #force of infection = (total vax status specific contacts) (probability of transmission per contact)
     #(infectivity)  (susceptibility)  (proportion infected)  
     
-    lambda_00 <-   prop_contact_00*total_0*beta*((1-v*0)/1)*(1-m*l_0)*(I_0/N_0)
-    lambda_01 <-   prop_contact_01*total_0*beta*((1-v*k)/2)*(1-m*l_0)*(I_0/N_0)
-    lambda_02 <-   prop_contact_02*total_0*beta*((1-v*k)/3)*(1-m*l_0)*(I_0/N_0)
-    lambda_03 <-   prop_contact_03*total_0*beta*((1-v*k)/4)*(1-m*l_0)*(I_0/N_0)
     
-    lambda_10 <-   prop_contact_10*total_1*beta*((1-v*0)/1)*(1-m*l_1)*(I_1/N_1)
-    lambda_11 <-   prop_contact_11*total_1*beta*((1-v*k)/2)*(1-m*l_1)*(I_1/N_1)
-    lambda_12 <-   prop_contact_12*total_1*beta*((1-v*k)/3)*(1-m*l_1)*(I_1/N_1)
-    lambda_13 <-   prop_contact_13*total_1*beta*((1-v*k)/4)*(1-m*l_1)*(I_1/N_1)
+    #((1-v*0)/1) =1 
+    #v_i vaccine efficacy per number of doses 
+    #l_i level of adherence to control measures 
     
-    lambda_20 <-   prop_contact_20*total_2*beta*((1-v*0)/1)*(1-m*l_2)*(I_2/N_2)
-    lambda_21 <-   prop_contact_21*total_2*beta*((1-v*k)/2)*(1-m*l_2)*(I_2/N_2)
-    lambda_22 <-   prop_contact_22*total_2*beta*((1-v*k)/3)*(1-m*l_2)*(I_2/N_2)
-    lambda_23 <-   prop_contact_23*total_2*beta*((1-v*k)/4)*(1-m*l_2)*(I_2/N_2)
+    lambda_00 <-   prop_contact_00*total_0*beta*v_0*l_0*(I_0/N_0)
+    lambda_01 <-   prop_contact_01*total_0*beta*v_1*l_0*(I_0/N_0)
+    lambda_02 <-   prop_contact_02*total_0*beta*v_2*l_0*(I_0/N_0)
+    lambda_03 <-   prop_contact_03*total_0*beta*v_3*l_0*(I_0/N_0)
+    
+    lambda_10 <-   prop_contact_10*total_1*beta*v_0*l_1*(I_1/N_1)
+    lambda_11 <-   prop_contact_11*total_1*beta*v_1*l_1*(I_1/N_1)
+    lambda_12 <-   prop_contact_12*total_1*beta*v_2*l_1*(I_1/N_1)
+    lambda_13 <-   prop_contact_13*total_1*beta*v_3*l_1*(I_1/N_1)
+    
+    lambda_20 <-   prop_contact_20*total_2*beta*v_0*l_2*(I_2/N_2)
+    lambda_21 <-   prop_contact_21*total_2*beta*v_1*l_2*(I_2/N_2)
+    lambda_22 <-   prop_contact_22*total_2*beta*v_2*l_2*(I_2/N_2)
+    lambda_23 <-   prop_contact_23*total_2*beta*v_3*l_2*(I_2/N_2)
     
     
-    lambda_30 <-   prop_contact_30*total_3*beta*((1-v*0)/1)*(1-m*l_3)*(I_3/N_3)
-    lambda_31 <-   prop_contact_31*total_3*beta*((1-v*k)/2)*(1-m*l_3)*(I_3/N_3)
-    lambda_32 <-   prop_contact_32*total_3*beta*((1-v*k)/3)*(1-m*l_3)*(I_3/N_3)
-    lambda_33 <-   prop_contact_33*total_3*beta*((1-v*k)/4)*(1-m*l_3)*(I_3/N_3)
+    lambda_30 <-   prop_contact_30*total_3*beta*v_0*l_3*(I_3/N_3)
+    lambda_31 <-   prop_contact_31*total_3*beta*v_1*l_3*(I_3/N_3)
+    lambda_32 <-   prop_contact_32*total_3*beta*v_2*l_3*(I_3/N_3)
+    lambda_33 <-   prop_contact_33*total_3*beta*v_3*l_3*(I_3/N_3)
     
     dS_0 <- -(lambda_00 + lambda_10 +lambda_20 + lambda_30)*S_0 + sigma_0*R_0 
     dI_0 <-  (lambda_00 + lambda_10 +lambda_20 + lambda_30)*(S_0 + R_0*(1-nu))   - gamma_0*I_0

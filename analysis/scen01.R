@@ -65,12 +65,15 @@ parameters <- c(
   total_3=10/7,
   beta = 0.7,# probability of transmission given contact
   k=1,
-  v=0.5, #vax efficacy
-  m=0.5, # effectiveness of control measure (I can mak ethis a function)
-  l_0=0.1, # compliance level for vax 0 
-  l_1=0.5, # compliance level for vax 1 
-  l_2=0.7, # compliance level for vax 2 
-  l_3=0.7, # compliance level for vax 3+ 
+  v_0=1-0, #vax efficacy by number of doses. These are made up for now   
+  v_1=1-0.3,
+  v_2=1-0.6,
+  v_3=1-0.85,
+ # m=0.5, # effectiveness of control measure (I can mak ethis a function)
+  l_0=1-0.1, # compliance level for vax 0 
+  l_1=1-0.5, # compliance level for vax 1 
+  l_2=1-0.7, # compliance level for vax 2 
+  l_3=1-0.7, # compliance level for vax 3+ 
   
   #other parameters 
                 
@@ -127,10 +130,10 @@ parameters_no_phil["total_1"] <- 20/7
 parameters_no_phil["total_2"] <- 20/7
 parameters_no_phil["total_3"] <- 20/7
 
-parameters_no_phil["l_0"] <-  0.5
-parameters_no_phil["l_1"] <-  0.5
-parameters_no_phil["l_2"]  <- 0.5
-parameters_no_phil["l_3"] <-  0.5
+parameters_no_phil["l_0"] <-  1-0.5
+parameters_no_phil["l_1"] <-  1-0.5
+parameters_no_phil["l_2"]  <- 1-0.5
+parameters_no_phil["l_3"] <-  1-0.5
 
 
 output_no_phil <- as.data.frame(ode(y = init, times = times, func = sir_homophily , parms = parameters_no_phil))
