@@ -1,24 +1,17 @@
 setwd("~/Desktop/vaccine-homophily/vaccine-homophily")
 source("analysis/functions.R")
+#dat = readRDS("data/BC-dat.rds")
+#start_date <- ymd("2022-02-16")
+#stop_date <- ymd("2022-03-03")
+#dat <- dat %>% filter(date >= start_date &  date <= stop_date)
+#import BC COVID-19 reported cases for the study period (Feb 16th to March 3rd 2022)
+
+init <- c(S_0=last(output[,2]), I_0=last(output[,3]), R_0=last(output[,4]),
+          S_1=last(output[,5]), I_1=last(output[,6]), R_1=last(output[,7]), S_2=last(output[,8]),
+          I_2=last(output[,9]), R_2=last(output[,10]), S_3=last(output[,11]), I_3=last(output[,12]), 
+          R_3=last(output[,13])) #initial condition 
 
 
-init_state <- make_initial_sate(total_pop=5.07e6, 
-                                prop_unvax=(1-0.876), #87.6 at least 1 dose
-                                prop_dose1=0.0292856, #first dose 
-                                prop_dose2=0.3134464,
-                                prop_dose3= 1-(0.3134464+0.0292856+0.124), #from vax data
-                                prop_wan_0=0.5,
-                                prop_wan_1=0.3,
-                                prop_wan_2=0.3,
-                                prop_wan_3=0.2,
-                                prop_initial_inf_0=0.01,
-                                prop_initial_inf_1=7e-5,
-                                prop_initial_inf_2=5e-5,
-                                prop_initial_inf_3=1e-5)
-
-init <- c(S_0=init_state[1], I_0=init_state[2], R_0=init_state[3],
-          S_1=init_state[4], I_1=init_state[5], R_1=init_state[6], S_2=init_state[7],
-          I_2=init_state[8], R_2=init_state[9], S_3=init_state[10], I_3=init_state[11], R_3=init_state[12]) #initial condition 
 
 ##sanity check for force of infection
 #prop_contact_00 <- seq(0.05,0.8, length=20)
@@ -40,66 +33,16 @@ init <- c(S_0=init_state[1], I_0=init_state[2], R_0=init_state[3],
 # # 
 #  plot(i,1-FI_0(i))
 
-parameters <- c(
-  #force of infection parameters 
-  prop_contact_00=0.39,
-  prop_contact_01=0.04,
-  prop_contact_02=0.1552,
-  prop_contact_03=0.4148,
-  prop_contact_10=0.16,
-  prop_contact_11=0.18,
-  prop_contact_12=0.18,
-  prop_contact_13=0.48,
-  prop_contact_20=0.1293,
-  prop_contact_21=0.0107,
-  prop_contact_22=0.62,
-  prop_contact_23=0.24,
-  prop_contact_30=0.0462,
-  prop_contact_31=0.0038,
-  prop_contact_32=0.27,
-  prop_contact_33=0.68,
-  #contact per week a1=23   a2=25  a3=22   a4=10
-  total_0=23/7, #contact per day (from data)
-  total_1=25/7,
-  total_2=22/7,  
-  total_3=10/7,
-  beta = 0.7,# probability of transmission given contact
-  k=1,
-  v_0=1-0, #vax efficacy by number of doses. These are made up for now   
-  v_1=1-0.3,
-  v_2=1-0.6,
-  v_3=1-0.85,
- # m=0.5, # effectiveness of control measure (I can mak ethis a function)
-  l_0=1-0.1, # compliance level for vax 0 
-  l_1=1-0.5, # compliance level for vax 1 
-  l_2=1-0.7, # compliance level for vax 2 
-  l_3=1-0.7, # compliance level for vax 3+ 
-  
-  #other parameters 
-                
-  sigma_0=1/(1*365),   # 1 year duration of immunity 
-  sigma_1=1/(1*365),
-  sigma_2=1/(1*365),
-  sigma_3=1/(1*365),
-  
-  gamma_0=1/4,  #1/4 rocovery rate 
-  gamma_1=1/4,
-  gamma_2=1/4,
-  gamma_3=1/4,
-  
-  nu=0.95  # protection for newly recovered 
-                
-)
 
 
 
-
-times= seq(1, 365, 1)
+times= 1:90
 
 #With homophily 
 
-output <- as.data.frame(ode(y = init, times = times, func = sir_homophily , parms = parameters))
-
+output_homophily <- as.data.frame(ode(y = init, times = times, func = sir_homophily , parms = parameters)) %>%
+          mutate(incid = (I_0+I_1+I_2+I_3)*parameters[["gamma_3"]]*asc_frac) %>% 
+  mutate(date=seq.Date(ymd(start_date), ymd(start_date)-1+length(times), 1))
 
 
 #Without homophily 
@@ -125,39 +68,150 @@ parameters_no_phil["prop_contact_32"] <- 0.25
 parameters_no_phil["prop_contact_33"] <- 0.25
 
 
-parameters_no_phil["total_0"] <- 20/7
-parameters_no_phil["total_1"] <- 20/7
-parameters_no_phil["total_2"] <- 20/7
-parameters_no_phil["total_3"] <- 20/7
+parameters_no_phil["total_0"] <- average_weighted_conctact/7
+parameters_no_phil["total_1"] <- average_weighted_conctact/7
+parameters_no_phil["total_2"] <- average_weighted_conctact/7
+parameters_no_phil["total_3"] <- average_weighted_conctact/7
 
-parameters_no_phil["l_0"] <-  1-0.5
-parameters_no_phil["l_1"] <-  1-0.5
-parameters_no_phil["l_2"]  <- 1-0.5
-parameters_no_phil["l_3"] <-  1-0.5
+parameters_no_phil["l_0"] <-  average_weighted_complience
+parameters_no_phil["l_1"] <-  average_weighted_complience
+parameters_no_phil["l_2"]  <- average_weighted_complience
+parameters_no_phil["l_3"] <-  average_weighted_complience
 
 
-output_no_phil <- as.data.frame(ode(y = init, times = times, func = sir_homophily , parms = parameters_no_phil))
-
+output_no_phil <- as.data.frame(ode(y = init, times = times, func = sir_homophily ,
+                                    parms = parameters_no_phil))
 
 #make plot 
 
 cols <- c("with homophily" = "orange",
         "without homophily"="darkgreen")
 
- scen01_plot <- ggplot() + geom_line(data=output,aes(x=times,y= (I_0+I_1+I_2+I_3)
-           , colour = "with homophily") ,size=1.2,alpha=0.4) +
-          geom_line(data=output_no_phil,aes(x=times,y= (I_0+I_1+I_2+I_3)
-       ,  colour = "without homophily") ,size=1.2,alpha=0.4) +
-        labs(y="Infections",x="Time (days)") + ylim(c(0,80000))  +theme_light() +
-         scale_color_manual(values = cols) +  theme(axis.text=element_text(size=15),
-         plot.title = element_text(size=15, face="bold"),
-         legend.position = "bottom", legend.title = element_text(size=15),
-        legend.text = element_text(size=15),
-        axis.title=element_text(size=15,face="bold")) +labs(color = " ") 
+
+#to do
+#make a grid plot for ratio infection with and without homophily
+#importation rate and transmission rate 
+# 
+# scen01_plot <- ggplot() + geom_line(data= output_homophily,aes(x=times, y= (I_0+I_1+I_2+I_3)
+#                ,colour = "with homophily") ,size=1.2,alpha=0.4) +
+#                 geom_line(data=output_no_phil,aes(x=times,y= (I_0+I_1+I_2+I_3)
+#                ,colour = "without homophily") ,size=1.2,alpha=0.4) +
+#                labs(y="Infections",x="Time (days)") + ylim(c(0,3500))  +theme_light() +
+#               scale_color_manual(values = cols) +  theme(axis.text=element_text(size=15),
+#                plot.title = element_text(size=15, face="bold"),
+#                legend.position = "bottom", legend.title = element_text(size=15),
+#                legend.text = element_text(size=15),
+#                axis.title=element_text(size=15,face="bold")) +labs(color = " ") 
+# 
+# ratio_homophily <- (output_no_phil$I_0+output_no_phil$I_1+ output_no_phil$I_2+output_no_phil$I_3)/
+#   (output_homophily$I_0+output_homophily$I_1+output_homophily$I_2+output_homophily$I_3)
+# 
+# plot(ratio_homophily)
+# 
+
+
+
+beta = data.frame(beta=seq(0.1,0.24, length.out=20))
+
+vary_parameter <- function(x, parameters=parameters,init1=init){
+  parameters["beta"] <- x
+  parameters["v_1"]  <- 1- (0.1)*6
+  parameters["v_2"]  <- 1- (0.148)*6
+  parameters["v_3"]  <- 1- (0.74)*1.25
+  out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
+                                        parms=c(parameters))) # parameters[["p"]]*
+  prev_var = (out_var$I_0 + out_var$I_1 + out_var$I_2 + out_var$I_3)
+}
+prev_var <- data.frame(apply(beta, 1, vary_parameter, parameters=parameters))
+
+
+vary_parameter_no_phil <- function(x, parameters=parameters_no_phil,init1=init){
+  parameters_no_phil["beta"] <- x
+  parameters["v_1"]  <- 1 - (0.1)*6
+  parameters["v_2"]  <- 1 - (0.148)*6
+  parameters["v_3"]  <- 1 - (0.74)*1.25
+  out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
+                                        parms=parameters_no_phil)) # parameters[["p"]]*
+  prev_var_no_phil = (out_var$I_0 + out_var$I_1 + out_var$I_2 + out_var$I_3)
+}
+
+
+
+prev_var_no_phil <- data.frame(apply(beta, 1, vary_parameter_no_phil, parameters=parameters_no_phil))
+
+colnames(prev_var_no_phil) <- beta[,1]
+colnames(prev_var) <- beta[,1]
+
+long_form <- gather(prev_var_no_phil)
+long_form_phil <- gather(prev_var)
+
+ratio_phil_no_phil  <- long_form
+
+ratio_phil_no_phil$value <- long_form_phil$value/long_form$value
+
+long_form$time <- times
+long_form_phil$time <- times
+ratio_phil_no_phil$time <- times
+
+plot_ratio <- plot_output(data= ratio_phil_no_phil )
+plot_no_phil <- plot_output(data=long_form)
+plot_phil <- plot_output(data=long_form_phil)
+
+ggarrange(plot_ratio , plot_no_phil, plot_phil, 
+          labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+
+
+ggsave(file="figures/var_noinport_plot.png",  var_inport_plot, width = 10, height = 8)
+
+
+plot(NA,NA, xlim=c(0,180), ylim=c(0,5))
+lines(prev_var$X1/prev_var_no_phil$X1, col="yellow")
+lines(prev_var$X2/prev_var_no_phil$X2, col="green")
+lines(prev_var$X3/prev_var_no_phil$X3, col="red")
+lines(prev_var$X4/prev_var_no_phil$X4, col="blue")
+
+plot(NA,NA, xlim=c(0,1800), ylim=c(0,8000))
+lines(prev_var$X1)
+lines(prev_var_no_phil$X1, col="yellow")
+lines(prev_var$X2)
+lines(prev_var_no_phil$X2, col="yellow")
+lines(prev_var$X3) 
+lines(prev_var_no_phil$X3, col="yellow")
+lines(prev_var$X4)
+lines(prev_var_no_phil$X4, col="yellow")
+
+
+#at low infection levels high homophily is beneficial 
+# at high infection levels high homophily is worse (with importation + mainly in vaccinated) 
+
+
+
+
+
+
+
+scen01_plot <- ggplot() + geom_line(data= output_homophily,aes(x=times, y= (I_0+I_1+I_2+I_3)
+                ,colour = "with homophily") ,size=1.2,alpha=0.4) +
+  geom_line(data=output_no_phil,aes(x=times,y= (I_0+I_1+I_2+I_3)
+                                    ,colour = "without homophily") ,size=1.2,alpha=0.4)
+scen01_plot
+
+plot(output_homophily$I_0)
+lines(output_homophily$I_1)
+lines(output_homophily$I_2)
+lines(output_homophily$I_3)
+
+plot(output_no_phil$I_0)
+lines(output_no_phil$I_1)
+lines(output_no_phil$I_2)
+lines(output_no_phil$I_3)
 
 #make bar plot  
- final_size <- sum(output$I_0+output$I_1+output$I_2+output$I_3)
- peak_size <- max(output$I_0+output$I_1+output$I_2+output$I_3)
+ final_size <- sum(output_homophily$I_0+output_homophily$I_1+output_homophily$I_2+
+                     output_homophily$I_3)
+ peak_size <- max(output_homophily$I_0+output_homophily$I_1+output_homophily$I_2+output_homophily$I_3)
 
  final_size_no <- sum(output_no_phil$I_0+output_no_phil$I_1+
                         output_no_phil$I_2+output_no_phil$I_3)
@@ -172,7 +226,7 @@ cols <- c("with homophily" = "orange",
                        fill=mixing_pattern),size=0.2) + 
    geom_bar(stat = "identity", size=0.02, width = 0.2) + scale_fill_hue(c = 40) + 
    ylab("Total infection in 1 year") 
- 
+ scen01_bar_plot
  #save plot 
  ggsave(file="figures/scen01_plot.png",  scen01_plot, width = 10, height = 8)
  ggsave(file="figures/scen01_bar_plot.png", scen01_bar_plot, width = 10, height = 8)
