@@ -79,6 +79,14 @@ parameters_no_phil["l_2"]  <- average_weighted_complience
 parameters_no_phil["l_3"] <-  average_weighted_complience
 
 
+parameters_no_phil["nu_0"] <-  average_weighted_protection
+parameters_no_phil["nu_1"] <-  average_weighted_protection
+parameters_no_phil["nu_2"]  <- average_weighted_protection
+parameters_no_phil["nu_3"] <-  average_weighted_protection
+
+
+
+
 output_no_phil <- as.data.frame(ode(y = init, times = times, func = sir_homophily ,
                                     parms = parameters_no_phil))
 
@@ -115,9 +123,7 @@ beta = data.frame(beta=seq(0.1,0.24, length.out=20))
 
 vary_parameter <- function(x, parameters=parameters,init1=init){
   parameters["beta"] <- x
-  parameters["v_1"]  <- 1- (0.1)*6
-  parameters["v_2"]  <- 1- (0.148)*6
-  parameters["v_3"]  <- 1- (0.74)*1.25
+ 
   out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
                                         parms=c(parameters))) # parameters[["p"]]*
   prev_var = (out_var$I_0 + out_var$I_1 + out_var$I_2 + out_var$I_3)
@@ -127,17 +133,15 @@ prev_var <- data.frame(apply(beta, 1, vary_parameter, parameters=parameters))
 
 vary_parameter_no_phil <- function(x, parameters=parameters_no_phil,init1=init){
   parameters_no_phil["beta"] <- x
-  parameters["v_1"]  <- 1 - (0.1)*6
-  parameters["v_2"]  <- 1 - (0.148)*6
-  parameters["v_3"]  <- 1 - (0.74)*1.25
+
   out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
                                         parms=parameters_no_phil)) # parameters[["p"]]*
   prev_var_no_phil = (out_var$I_0 + out_var$I_1 + out_var$I_2 + out_var$I_3)
 }
 
 
-
-prev_var_no_phil <- data.frame(apply(beta, 1, vary_parameter_no_phil, parameters=parameters_no_phil))
+prev_var_no_phil <- data.frame(apply(beta, 1, vary_parameter_no_phil, 
+                                     parameters=parameters_no_phil))
 
 colnames(prev_var_no_phil) <- beta[,1]
 colnames(prev_var) <- beta[,1]

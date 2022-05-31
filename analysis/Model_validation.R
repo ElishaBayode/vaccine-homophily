@@ -1,5 +1,5 @@
 source("analysis/functions.R")
-source("analysis/setup")
+source("analysis/setup.R")
 
 #import BC COVID-19 reported cases for the study period (Feb 16th to March 3rd 2022)
 asc_frac <- 0.25
@@ -39,4 +39,4 @@ Model_validation <- ggplot(data=dat,aes(x=date,y= value,  colour = "data")) + ge
                                                              axis.title=element_text(size=15,face="bold")) +labs(color = " ") 
 Model_validation
 
-ggsave(file="figures/Model_validation.png",  Model_validation, width = 10, height = 8)
+#ggsave(file="figures/Model_validation.png",  Model_validation, width = 10, height = 8)
