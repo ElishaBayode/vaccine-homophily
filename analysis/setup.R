@@ -13,7 +13,7 @@ dat <- dat %>% filter(date >= start_date &  date <= stop_date)
 
 
 
-
+asc_frac <- 0.24
 recov_rate <- 1/4
 initial_inf <- (first(dat$value)/asc_frac)/recov_rate
 
@@ -51,7 +51,7 @@ sum_weight <- prop_totat_0+prop_totat_1+prop_totat_2+prop_totat_3
 average_weighted_conctact <- (23*prop_totat_0 + 25*prop_totat_1 + 
                                 22*prop_totat_2 + 10*prop_totat_3)/sum_weight 
 
-#Level of compliance by doese:  from Kiffer's data 
+#Level of compliance by doses:  from Kiffer's data 
 compliance_0 <- 1-0.134
 compliance_1= 1-0.174
 compliance_2= 1-0.349  
@@ -60,9 +60,9 @@ compliance_3= 1-0.817
 average_weighted_complience <- (compliance_0*prop_totat_0 + compliance_1*prop_totat_1 + 
                                   compliance_2*prop_totat_2 + compliance_3*prop_totat_3)/sum_weight
 
-average_weighted_protection <- (0.35*prop_totat_0 + 0.65*prop_totat_1 + 
-                                  0.68*prop_totat_2 + 0.83*prop_totat_3)/sum_weight
-
+# average_weighted_protection <- (0.35*prop_totat_0 + 0.65*prop_totat_1 + 
+#                                   0.68*prop_totat_2 + 0.83*prop_totat_3)/sum_weight
+# 
 
 
 parameters <- c(
@@ -88,7 +88,7 @@ parameters <- c(
   total_1=25/7,
   total_2=22/7,  
   total_3=10/7,
-  beta = 0.21,# probability of transmission given contact
+  beta = 0.2,# probability of transmission given contact
   k=1,
   #Vaccine efficacy
   #https://www.nejm.org/doi/full/10.1056/NEJMoa2119451
@@ -126,7 +126,7 @@ parameters <- c(
   f_3 = 150
 )
 
-times= 1:60
+
 
 
 
@@ -174,10 +174,6 @@ parameters_no_phil["l_2"]  <- average_weighted_complience
 parameters_no_phil["l_3"] <-  average_weighted_complience
 
 
-parameters_no_phil["nu_0"] <-  average_weighted_protection
-parameters_no_phil["nu_1"] <-  average_weighted_protection
-parameters_no_phil["nu_2"]  <- average_weighted_protection
-parameters_no_phil["nu_3"] <-  average_weighted_protection
 
 
 

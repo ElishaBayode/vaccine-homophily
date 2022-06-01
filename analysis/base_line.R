@@ -10,6 +10,12 @@ init <- c(S_0=last(output[,2]), I_0=last(output[,3]), R_0=last(output[,4]),
 output_no_phil <- as.data.frame(ode(y = init, times = times, func = sir_homophily ,
                                     parms = parameters_no_phil))
 
+
+output_homophily <- as.data.frame(ode(y = init, times = times, func = sir_homophily , parms = parameters)) %>%
+mutate(incid = (I_0+I_1+I_2+I_3)*parameters[["gamma_3"]]*asc_frac) %>% 
+  mutate(date=seq.Date(ymd(start_date), ymd(start_date)-1+length(times), 1))
+
+
 #make plot 
 
 cols <- c("with homophily" = "orange",
