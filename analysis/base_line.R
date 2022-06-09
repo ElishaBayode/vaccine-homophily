@@ -23,12 +23,15 @@ cols <- c("with homophily" = "orange",
 
 
 
-beta = data.frame(beta=seq(0.1,0.24, length.out=20))
+beta = data.frame(beta=seq(0.1,0.3, length.out=20))
 
 vary_parameter <- function(x, parameters=parameters,init1=init){
   parameters["beta"] <- x
   
-  out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
+  parameters["f_2"]  <- 0
+  parameters["f_3"]  <- 0
+  
+out_var <- as.data.frame(deSolve::ode(y=init1,time=times,func=sir_homophily ,
                                         parms=c(parameters))) # parameters[["p"]]*
   prev_var = (out_var$I_0 + out_var$I_1 + out_var$I_2 + out_var$I_3)
 }
@@ -61,13 +64,16 @@ long_form$time <- times
 long_form_phil$time <- times
 ratio_phil_no_phil$time <- times
 
-plot_ratio <- plot_output(data= ratio_phil_no_phil )
-plot_no_phil <- plot_output(data=long_form)
-plot_phil <- plot_output(data=long_form_phil)
+  plot_ratio <- plot_output(data= ratio_phil_no_phil ) + 
+  labs(y="Ratio of Infections (with homophily to without homophily)", x ="Time (days)") 
+  plot_no_phil <- plot_output(data=long_form) + labs(y="Infections (without homophily)", x ="Time (days)") 
+  plot_phil <- plot_output(data=long_form_phil) + labs(y="Infections (with homophily)", x ="Time (days)")
 
-ggarrange(plot_ratio , plot_no_phil, plot_phil, 
-          labels = c("A", "B", "C"),
-          ncol = 3, nrow = 1)
+  
+baseline_scen <- ggarrange(plot_ratio ,  plot_phil, plot_no_phil,
+                           labels = c("A", "B", "C"), ncol = 3, nrow = 1)
+
+ggsave(file="figures/baseline_scen.png",  baseline_scen, width = 12, height = 6)
 
 
 #make bar plot  

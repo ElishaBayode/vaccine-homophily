@@ -125,7 +125,5 @@ plot_output <- function(data=data){
     #labs(y="Ratio of Infections (with homophily to without homophily)", x ="Time (days)") + #ylim(c(0.01,10)) #+ 
     #geom_hline(yintercept=1, linetype="solid", color = "black", size=0.5) 
   
-  
-  
-  
+
 }
